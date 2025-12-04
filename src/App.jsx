@@ -254,7 +254,7 @@ const CalendarView = ({ events, currentDate, onNavigate, onEditEvent, onAddEvent
             <div className="flex flex-col">{weeks.map((week, wIndex) => (<div key={wIndex} className="grid grid-cols-7 flex-1">{week.map((day, dIndex) => { if (!day) return <div key={dIndex} className="bg-gray-900/50 border-r border-b border-gray-800 min-h-[120px]"></div>; const dateObj = new Date(year, month, day); const isToday = new Date().toDateString() === dateObj.toDateString(); const dayEvents = events.filter(e => { const eDate = new Date(e.time); return eDate.getDate() === day && eDate.getMonth() === month && eDate.getFullYear() === year; }); return (
                 <div key={dIndex} className={`relative border-r border-b border-gray-800 min-h-[120px] p-1 group transition-colors cursor-pointer ${isToday ? 'bg-blue-900/10' : 'hover:bg-gray-800/30'}`} onClick={(e) => { if(isAdminMode && e.target === e.currentTarget) { const setTime = new Date(year, month, day, 12, 0).toISOString(); onAddEvent({ time: setTime }); } else if (dayEvents.length > 0) { onDayClick(dateObj, dayEvents); } }}>
                     <div className={`text-xs font-bold mb-1 w-6 h-6 flex items-center justify-center rounded-full ${isToday ? 'bg-blue-600 text-white' : 'text-gray-400'}`}>{day}</div>
-                    <div className="space-y-1">{dayEvents.slice(0, 3).map(ev => { const status = getComputedStatus(ev, events); const statusColor = status === 'live' ? 'border-red-500 bg-red-900/20 text-red-200' : 'border-l-2 border-gray-600'; return (<div key={ev.id} className={`text-[9px] px-2 py-1 rounded truncate shadow-sm ${statusColor} ${status === 'live' ? '' : (GAMES[ev.game]?.color || 'bg-gray-700')} ${GAMES[ev.game]?.text || 'text-white'}`}>{status === 'live' && <span className="animate-pulse font-bold mr-1">●</span>}{ev.game === 'pubg' ? 'PUBG' : `${ev.team1} v ${ev.team2}`}</div>); })}{dayEvents.length > 3 && (<div className="text-[9px] text-gray-500 text-center font-medium">+{dayEvents.length - 3} trận khác</div>)}</div>
+                    <div className="space-y-1">{dayEvents.slice(0, 3).map(ev => { const status = getComputedStatus(ev, events); const statusColor = status === 'live' ? 'border-red-500 bg-red-900/20 text-red-200' : 'border-l-2 border-gray-600'; return (<div key={ev.id} className={`text-[10px] px-2 py-1 rounded truncate shadow-sm ${statusColor} ${status === 'live' ? '' : (GAMES[ev.game]?.color || 'bg-gray-700')} ${GAMES[ev.game]?.text || 'text-white'}`}>{status === 'live' && <span className="animate-pulse font-bold mr-1">●</span>}{ev.game === 'pubg' ? 'PUBG' : `${ev.team1} v ${ev.team2}`}</div>); })}{dayEvents.length > 3 && (<div className="text-[9px] text-gray-500 text-center font-medium">+{dayEvents.length - 3} trận khác</div>)}</div>
                     {isAdminMode && (<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none"><div className="bg-gray-900/80 p-1 rounded text-white text-[10px] flex items-center gap-1"><Plus size={10}/> Thêm</div></div>)}
                 </div>); })}</div>))}</div>
         </div>
@@ -266,11 +266,12 @@ const CountdownDisplay = ({ targetDate }) => {
     return (<div className="flex gap-2 text-xs font-mono text-blue-300 bg-blue-900/30 px-2 py-1 rounded border border-blue-500/30"><span className="flex items-center gap-1"><Timer size={10}/> Sắp diễn ra:</span><span>{timeLeft.days > 0 && `${timeLeft.days}d `}{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span></div>);
 };
 
-// --- COMPONENT: SCHEDULE ITEM ---
+// --- COMPONENT: SCHEDULE ITEM (UPDATED: Larger Text + Spacing) ---
 const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     const isBattleRoyale = event.game === 'pubg' || event.type === 'battle_royale';
     const timeStr = new Date(event.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
     
+    // Use Computed Status logic
     const computedStatus = getComputedStatus(event, allEvents || []);
     const isLive = computedStatus === 'live';
     const isUpcoming = computedStatus === 'upcoming';
@@ -291,7 +292,8 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                          <div className="flex flex-col items-center min-w-[50px]">
-                            <span className={`text-lg font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</span>
+                            {/* Bump text size */}
+                            <span className={`text-xl font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</span>
                             {!compact && <span className="text-[10px] bg-orange-900/50 text-orange-400 px-2 rounded uppercase font-bold tracking-wider">PUBG</span>}
                         </div>
                         <div>
@@ -302,7 +304,7 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                                  <ExternalLink size={10} className="text-gray-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"/>
                                  {statusBadge}
                              </div>
-                             <div className="text-xs text-gray-400">{event.stage} • {event.details?.map || 'TBD'}</div>
+                             <div className="text-sm text-gray-400">{event.stage} • {event.details?.map || 'TBD'}</div>
                              {isUpcoming && !compact && <div className="mt-1"><CountdownDisplay targetDate={event.time} /></div>}
                         </div>
                     </div>
@@ -321,15 +323,17 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     }
 
     return (
-        <div className={`bg-gray-800 rounded hover:bg-gray-750 transition flex flex-col md:flex-row items-start md:items-center gap-4 border-l-4 ${isLive ? 'border-red-500 ring-1 ring-red-500/20' : 'border-gray-700'} ${compact ? 'p-2' : 'p-4'}`}>
+        <div className={`bg-gray-800 rounded hover:bg-gray-750 transition flex flex-col md:flex-row items-start md:items-center gap-4 border-l-4 ${isLive ? 'border-red-500 ring-1 ring-red-500/20' : 'border-gray-700'} ${compact ? 'p-3' : 'p-5'}`}>
             <div className="min-w-[60px] text-center">
-                <div className={`text-lg font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</div>
+                {/* Bump text size */}
+                <div className={`text-xl font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</div>
                 {!compact && <div className={`text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 uppercase ${GAMES[event.game]?.color || 'bg-gray-600'} text-white`}>
                     {event.game}
                 </div>}
             </div>
             <div className="flex-1 w-full">
-                <div className="text-xs text-gray-400 mb-1 flex items-center gap-2">
+                {/* Increased bottom margin (mb-3) to separate from team names */}
+                <div className="text-sm text-gray-400 mb-3 flex items-center gap-2">
                     <span 
                         className="font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-400 hover:underline group"
                         onClick={(e) => { e.stopPropagation(); onFilterTournament && onFilterTournament(event.tournament); }}
@@ -341,11 +345,12 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                     • {event.stage}
                     {statusBadge}
                 </div>
-                <div className="flex items-center gap-4">
+                {/* Bump text size to text-base */}
+                <div className="flex items-center gap-4 text-base">
                     <div className={`flex-1 text-right font-medium ${event.score1 > event.score2 ? 'text-yellow-400' : 'text-gray-200'}`}>
                         {event.team1}
                     </div>
-                    <div className={`px-3 py-1 rounded font-mono font-bold whitespace-nowrap text-sm ${isLive ? 'bg-red-900/50 text-red-200' : 'bg-gray-900 text-white'}`}>
+                    <div className={`px-3 py-1 rounded font-mono font-bold whitespace-nowrap text-lg ${isLive ? 'bg-red-900/50 text-red-200' : 'bg-gray-900 text-white'}`}>
                         {event.score1 ?? '-'} : {event.score2 ?? '-'}
                     </div>
                     <div className={`flex-1 text-left font-medium ${event.score2 > event.score1 ? 'text-yellow-400' : 'text-gray-200'}`}>
@@ -358,7 +363,7 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     );
 };
 
-// --- COMPONENT: DAY DETAILS MODAL ---
+// --- COMPONENT: DAY DETAILS MODAL (UPDATED: Borders) ---
 const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -370,9 +375,10 @@ const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
                     </h3>
                     <button onClick={onClose} className="hover:bg-gray-700 p-1 rounded text-gray-400 hover:text-white transition"><X size={20}/></button>
                  </div>
-                 <div className="space-y-3">
+                 <div className="space-y-0">
+                    {/* Added border-b to separate items nicely */}
                     {events.map(event => (
-                        <div key={event.id} className="relative group">
+                        <div key={event.id} className="relative group border-b border-gray-700 last:border-0 pb-3 mb-3 last:pb-0 last:mb-0">
                             <ScheduleItem event={event} allEvents={allEvents} compact={true} />
                             {onEdit && (
                                 <button 
@@ -419,6 +425,17 @@ export default function App() {
       }
   }, [events]);
   // --- LOCAL STORAGE LOGIC END ---
+
+  // --- AUTO FAVICON LOGIC (NEW) ---
+  useEffect(() => {
+    // Tạo link favicon động bằng SVG
+    const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
+    link.type = 'image/svg+xml';
+    link.rel = 'icon';
+    link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fbbf24%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9H4.5a2.5 2.5 0 0 1 0-5H6%22/><path d=%22M18 9h1.5a2.5 2.5 0 0 0 0-5H18%22/><path d=%22M4 22h16%22/><path d=%22M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22%22/><path d=%22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22%22/><path d=%22M18 2H6v7a6 6 0 0 0 12 0V2Z%22/></svg>`;
+    document.head.appendChild(link);
+  }, []);
+  // --- END FAVICON LOGIC ---
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -535,6 +552,8 @@ export default function App() {
 
   useEffect(() => { handleImportFromGist(true); }, []);
   
+  // --- UPDATED LOGIC: SORT EVENTS BEFORE GROUPING ---
+  // Fix issue where old data appears above new data due to insertion order
   const filteredEvents = useMemo(() => {
     let result = events;
     if (filterTournament) {
@@ -544,10 +563,51 @@ export default function App() {
             result = result.filter(e => e.game === activeGame);
         }
     }
-    return result;
+    // SORT HERE: Ensure everything is sorted by time ascending (oldest to newest)
+    return [...result].sort((a, b) => new Date(a.time) - new Date(b.time));
   }, [activeGame, events, filterTournament]);
 
-  const { upcomingGroups, pastGroups } = useMemo(() => { const groups = { upcomingGroups: {}, pastGroups: {} }; const today = new Date(); today.setHours(0,0,0,0); filteredEvents.forEach(e => { const eDate = new Date(e.time); const dateStr = eDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }); const dateKey = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate()); if (dateKey < today) { if (!groups.pastGroups[dateStr]) groups.pastGroups[dateStr] = []; groups.pastGroups[dateStr].push(e); } else { if (!groups.upcomingGroups[dateStr]) groups.upcomingGroups[dateStr] = []; groups.upcomingGroups[dateStr].push(e); } }); return groups; }, [filteredEvents]);
+  const { upcomingGroups, pastGroups } = useMemo(() => { 
+      // Use Arrays instead of Objects to guarantee order
+      const groups = { upcomingGroups: [], pastGroups: [] }; 
+      const today = new Date(); 
+      today.setHours(0,0,0,0); 
+      
+      // Helper to add event to group array
+      const addToGroupList = (list, event) => {
+          const eDate = new Date(event.time);
+          const dateStr = eDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' });
+          const dateValue = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate()).getTime();
+          
+          let group = list.find(g => g.dateStr === dateStr);
+          if (!group) {
+              group = { dateStr, dateValue, events: [] };
+              list.push(group);
+          }
+          group.events.push(event);
+      };
+
+      filteredEvents.forEach(e => { 
+          const eDate = new Date(e.time); 
+          const dateKey = new Date(eDate.getFullYear(), eDate.getMonth(), eDate.getDate()); 
+          
+          if (dateKey < today) { 
+              addToGroupList(groups.pastGroups, e);
+          } else { 
+              addToGroupList(groups.upcomingGroups, e);
+          } 
+      }); 
+      
+      // Ensure groups themselves are sorted
+      // Upcoming: Soonest first (Ascending)
+      groups.upcomingGroups.sort((a, b) => a.dateValue - b.dateValue);
+      
+      // Past: Most recent first (Descending)
+      groups.pastGroups.sort((a, b) => b.dateValue - a.dateValue);
+
+      return groups; 
+  }, [filteredEvents]);
+  
   const [tick, setTick] = useState(0); useEffect(() => { const interval = setInterval(() => setTick(t => t + 1), 60000); return () => clearInterval(interval); }, []);
 
   return (
@@ -620,13 +680,17 @@ export default function App() {
                     )}
 
                     {isAdminMode && (<button onClick={() => setEditingEvent({ id: 'new' })} className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800 transition flex items-center justify-center gap-2"><Plus size={20} /> Thêm Trận Đấu Thủ Công</button>)}
-                    {Object.keys(pastGroups).length > 0 && (<div className="text-center"><button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 mx-auto text-gray-500 hover:text-white transition text-xs font-bold uppercase tracking-wider py-2 px-4 rounded-full border border-gray-800 hover:border-gray-600 bg-gray-900"><History size={14}/> {showHistory ? 'Ẩn trận đấu đã qua' : `Xem ${Object.values(pastGroups).flat().length} trận đấu đã qua`}</button></div>)}
-                    {showHistory && Object.entries(pastGroups).sort((a,b) => new Date(b[0]) - new Date(a[0])).map(([date, dayEvents]) => (
-                        <div key={date} className="animate-fade-in opacity-75"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-500" /><h3 className="font-bold text-gray-400 capitalize">{date} (Đã qua)</h3></div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{dayEvents.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
+                    {/* UPDATED RENDERING LOGIC FOR SORTED GROUPS */}
+                    {pastGroups.length > 0 && (<div className="text-center"><button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 mx-auto text-gray-500 hover:text-white transition text-xs font-bold uppercase tracking-wider py-2 px-4 rounded-full border border-gray-800 hover:border-gray-600 bg-gray-900"><History size={14}/> {showHistory ? 'Ẩn trận đấu đã qua' : `Xem ${pastGroups.reduce((acc, g) => acc + g.events.length, 0)} trận đấu đã qua`}</button></div>)}
+                    
+                    {showHistory && pastGroups.map((group) => (
+                        <div key={group.dateStr} className="animate-fade-in opacity-75"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-500" /><h3 className="font-bold text-gray-400 capitalize">{group.dateStr} (Đã qua)</h3></div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
                     ))}
-                    {Object.keys(upcomingGroups).length === 0 && Object.keys(pastGroups).length === 0 && (<div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 rounded-lg"><Trophy className="w-12 h-12 text-gray-700 mb-2"/><p className="text-gray-500">Chưa có lịch thi đấu nào cho bộ lọc này.</p>{filterTournament && <button onClick={() => setFilterTournament(null)} className="mt-2 text-blue-400 text-sm hover:underline">Quay lại danh sách đầy đủ</button>}</div>)}
-                    {Object.entries(upcomingGroups).map(([date, dayEvents]) => (
-                        <div key={date} className="animate-fade-in"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2 sticky top-[72px] z-10 backdrop-blur-md"><CalendarIcon className="w-4 h-4 text-blue-400" /><h3 className="font-bold text-blue-100 capitalize">{date}</h3>{date === new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }) && <span className="ml-2 text-[10px] bg-red-600 text-white px-2 rounded font-bold animate-pulse">Hôm nay</span>}</div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{dayEvents.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
+                    
+                    {upcomingGroups.length === 0 && pastGroups.length === 0 && (<div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 rounded-lg"><Trophy className="w-12 h-12 text-gray-700 mb-2"/><p className="text-gray-500">Chưa có lịch thi đấu nào cho bộ lọc này.</p>{filterTournament && <button onClick={() => setFilterTournament(null)} className="mt-2 text-blue-400 text-sm hover:underline">Quay lại danh sách đầy đủ</button>}</div>)}
+                    
+                    {upcomingGroups.map((group) => (
+                        <div key={group.dateStr} className="animate-fade-in"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2 sticky top-[72px] z-10 backdrop-blur-md"><CalendarIcon className="w-4 h-4 text-blue-400" /><h3 className="font-bold text-blue-100 capitalize">{group.dateStr}</h3>{group.dateStr === new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }) && <span className="ml-2 text-[10px] bg-red-600 text-white px-2 rounded font-bold animate-pulse">Hôm nay</span>}</div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
                     ))}
                     {isAdminMode && (<button onClick={() => setEditingEvent({ id: 'new' })} className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800 transition flex items-center justify-center gap-2 mt-4"><Plus size={20} /> Thêm Trận Đấu Thủ Công</button>)}
                 </div>
