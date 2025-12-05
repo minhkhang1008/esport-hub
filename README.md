@@ -31,7 +31,7 @@ Hiện tại, Esports Hub hỗ trợ quản lý lịch thi đấu cho 4 bộ mô
 
 * Esport Hub hỗ trợ nhập xuất dữ liệu bằng định dạng file json
 * Các trận đấu mà người dùng tuỳ chỉnh sẽ được lưu vào localStorage
-* Mỗi khi vào Esport Hub, nó sẽ tự cập nhật data mới nhất (data hiện đang update tay vì chưa tìm được nguồn dữ liệu tự động)
+* Mỗi khi vào Esport Hub, nó sẽ tự cập nhật data mới nhất ([https://vlrggapi.vercel.app](https://vlrggapi.vercel.app/) cho Valorant, các môn còn lại đang nhập tay chờ tìm nguồn dữ liệu tự động)
 
 ### **4\. Chế độ Quản trị (Admin Mode)**
 
