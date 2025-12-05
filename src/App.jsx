@@ -6,17 +6,12 @@ import {
   CloudDownload, Target, Smartphone, Crosshair, Clipboard, FileJson, Filter, ExternalLink, RefreshCw, Eye, EyeOff
 } from 'lucide-react';
 
-// --- INITIAL DATA ---
 const INITIAL_EVENTS = [
-  // --- VALORANT (Dữ liệu mẫu, sẽ được API cập nhật đè lên) ---
   { id: 'val-gf', game: 'valorant', tournament: 'Game Changers 2025', stage: 'Grand Final', team1: 'Team Liquid Brazil', team2: 'TBD', score1: null, score2: null, time: '2025-11-30T15:00:00+07:00', status: 'upcoming' },
-
-  // --- PUBG PGC 2025 ---
   { id: 'pgc-gsa-m1', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 1', team1: 'FN Pocheon', score1: 10, details: { map: 'Miramar', kills: 10, totalPoints: 20 }, time: '2025-11-28T17:00:00+07:00', status: 'completed', type: 'battle_royale' },
   { id: 'pgc-gsa-m2', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 2', team1: 'Four Angry Men', score1: 10, details: { map: 'Miramar', kills: 6, totalPoints: 16 }, time: '2025-11-28T17:45:00+07:00', status: 'completed', type: 'battle_royale' },
   { id: 'pgc-gsa-m3', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 3', team1: 'The Expendables', score1: 10, details: { map: 'Taego', kills: 5, totalPoints: 15 }, time: '2025-11-28T18:30:00+07:00', status: 'completed', type: 'battle_royale' },
-  
-  // --- AoV AIC 2025 ---
+
   { id: 'aic-ub-qf1', game: 'aov', tournament: 'AIC 2025', stage: 'Upper QF', team1: 'FULL SENSE', team2: 'HKA', score1: 3, score2: 0, time: '2025-11-28T14:00:00+07:00', status: 'completed' },
   { id: 'aic-ub-qf2', game: 'aov', tournament: 'AIC 2025', stage: 'Upper QF', team1: 'PSG', team2: 'FL', score1: 2, score2: 3, time: '2025-11-28T16:00:00+07:00', status: 'completed' },
 ];
@@ -29,7 +24,7 @@ const GAMES = {
   valorant: { label: 'Valorant', color: 'bg-red-600', text: 'text-red-100', icon: Crosshair },
 };
 
-// --- HELPER: DATE FORMATTING ---
+
 const formatDateForInput = (isoString) => {
     if (!isoString) return '';
     const date = new Date(isoString);
@@ -43,7 +38,6 @@ const formatDateForInput = (isoString) => {
     return `${year}-${month}-${day}T${hours}:${minutes}`;
 };
 
-// --- HELPER: STATUS LOGIC ---
 const getComputedStatus = (event, allEvents) => {
     if (event.status === 'completed') return 'completed';
     if (event.status === 'live') return 'live';
@@ -53,7 +47,7 @@ const getComputedStatus = (event, allEvents) => {
     
     if (eventTime > now) return 'upcoming';
 
-    // Logic xác định Live giả lập nếu không có API realtime
+    // Determine Live status when API doesn't provide realtime status
     const sameDayEvents = allEvents.filter(e => 
         e.game === event.game && 
         new Date(e.time).toDateString() === eventTime.toDateString()
@@ -61,15 +55,12 @@ const getComputedStatus = (event, allEvents) => {
 
     const index = sameDayEvents.findIndex(e => e.id === event.id);
     
-    // Nếu API đã trả về 'completed' thì hàm này trả về 'completed' ở dòng đầu rồi.
-    // Logic dưới đây chỉ dự phòng cho các trận nhập tay.
     if (sameDayEvents.length === 1) return 'live';
 
     if (index < sameDayEvents.length - 1) {
         const nextEventTime = new Date(sameDayEvents[index + 1].time);
         return (now >= eventTime && now < nextEventTime) ? 'live' : 'completed';
     } else {
-        // Last match logic
         let totalDuration = 0;
         let count = 0;
         for (let i = 0; i < sameDayEvents.length - 1; i++) {
@@ -84,7 +75,6 @@ const getComputedStatus = (event, allEvents) => {
     }
 };
 
-// --- HELPER: TIME COUNTDOWN HOOK ---
 const useCountdown = (targetDate) => {
   const calculateTimeLeft = () => {
     const difference = +new Date(targetDate) - +new Date();
@@ -107,7 +97,6 @@ const useCountdown = (targetDate) => {
   return timeLeft;
 };
 
-// --- HELPER: NOTIFICATIONS ---
 const Toast = ({ notification, onClose }) => {
     if (!notification) return null;
     const styles = {
@@ -125,7 +114,6 @@ const Toast = ({ notification, onClose }) => {
     );
 };
 
-// --- HELPER: IMPORT MODAL ---
 const ImportModal = ({ onClose, onFileSelect, onJsonPaste, onClearData }) => {
     const [jsonText, setJsonText] = useState('');
     const [confirmDelete, setConfirmDelete] = useState(false); 
@@ -187,7 +175,6 @@ const ImportModal = ({ onClose, onFileSelect, onJsonPaste, onClearData }) => {
     );
 };
 
-// --- HELPER: EVENT EDITOR MODAL ---
 const EventEditor = ({ event, onSave, onCancel, onDelete, activeGame }) => {
     const [formData, setFormData] = useState(event || { id: '', game: activeGame !== 'all' ? activeGame : 'aov', tournament: '', stage: '', team1: 'TBD', team2: 'TBD', score1: '', score2: '', time: new Date().toISOString(), status: 'upcoming', type: activeGame === 'pubg' ? 'battle_royale' : 'match', details: { map: '', kills: '', leaderboard: '' } });
     const handleChange = (e) => {
@@ -234,7 +221,6 @@ const EventEditor = ({ event, onSave, onCancel, onDelete, activeGame }) => {
     );
 };
 
-// --- COMPONENT: CALENDAR VIEW ---
 const CalendarView = ({ events, currentDate, onNavigate, onEditEvent, onAddEvent, isAdminMode, onDayClick }) => {
     const year = currentDate.getFullYear(); const month = currentDate.getMonth(); const daysInMonth = new Date(year, month + 1, 0).getDate(); const firstDayOfMonth = new Date(year, month, 1).getDay(); const startingBlankDays = firstDayOfMonth; 
     const weeks = []; let currentWeek = []; for (let i = 0; i < startingBlankDays; i++) { currentWeek.push(null); } for (let day = 1; day <= daysInMonth; day++) { currentWeek.push(day); if (currentWeek.length === 7) { weeks.push(currentWeek); currentWeek = []; } } if (currentWeek.length > 0) { while (currentWeek.length < 7) { currentWeek.push(null); } weeks.push(currentWeek); }
@@ -261,12 +247,10 @@ const CountdownDisplay = ({ targetDate }) => {
     return (<div className="flex gap-2 text-xs font-mono text-blue-300 bg-blue-900/30 px-2 py-1 rounded border border-blue-500/30"><span className="flex items-center gap-1"><Timer size={10}/> Sắp diễn ra:</span><span>{timeLeft.days > 0 && `${timeLeft.days}d `}{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span></div>);
 };
 
-// --- COMPONENT: SCHEDULE ITEM (REMAKELOGIC) ---
 const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     const isBattleRoyale = event.game === 'pubg' || event.type === 'battle_royale';
     const isValorant = event.game === 'valorant';
     
-    // Xử lý hiển thị thời gian
     const timeStr = new Date(event.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
     const computedStatus = getComputedStatus(event, allEvents || []);
     const isLive = computedStatus === 'live';
@@ -329,8 +313,7 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                                 <span className={`fi fi-${event.details.flag1} w-3 h-2`}></span>
                                 <span className={`fi fi-${event.details.flag2} w-3 h-2`}></span>
                             </div>
-                        ) : null}
-                        {/* Always show Tag for Valorant as requested */}
+                             ) : null}
                         <div className={`text-[9px] px-2 py-0.5 rounded-full uppercase ${GAMES[event.game]?.color || 'bg-gray-600'} text-white`}>
                             {event.game}
                         </div>
@@ -402,7 +385,6 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     );
 };
 
-// --- COMPONENT: DAY DETAILS MODAL ---
 const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -437,17 +419,14 @@ const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
     );
 };
 
-// --- VALORANT API INTEGRATION ---
 const VLR_BASE_URL = '/api/vlr';
 
 const parseRelativeTime = (timeAgoStr) => {
     if (!timeAgoStr || typeof timeAgoStr !== 'string') return null;
     
-    // Nếu API trả về chuỗi ISO thì dùng luôn
     if (timeAgoStr.includes('T') && timeAgoStr.includes('Z')) return timeAgoStr;
 
     const now = new Date();
-    // Regex đơn giản để bắt "2h", "44m", "1d", "yesterday"
     if (timeAgoStr.toLowerCase().includes('yesterday')) {
         now.setDate(now.getDate() - 1);
         return now.toISOString();
@@ -474,18 +453,16 @@ const extractIdFromUrl = (url) => {
 };
 
 const normalizeVlrMatch = (vlrMatch, type) => {
-    let timeISO = new Date().toISOString(); // Default fallback
+    let timeISO = new Date().toISOString();
     
     if (vlrMatch.unix_timestamp) {
         let timestampStr = vlrMatch.unix_timestamp;
-        // Kiểm tra nếu là format SQL (không có T hoặc Z)
+        // Convert SQL format to ISO format
         if (!timestampStr.includes('T') && !timestampStr.includes('Z')) {
-             // Thay khoảng trắng bằng T và thêm Z để báo hiệu UTC
              timestampStr = timestampStr.replace(' ', 'T') + 'Z';
         }
         timeISO = new Date(timestampStr).toISOString();
     } 
-    // 2. Nếu là Results, thường không có timestamp chính xác, dùng time_completed "ago"
     else if (type === 'results' && vlrMatch.time_completed) {
         const relTime = parseRelativeTime(vlrMatch.time_completed);
         if (relTime) timeISO = relTime;
@@ -495,7 +472,6 @@ const normalizeVlrMatch = (vlrMatch, type) => {
     if (type === 'live_score') status = 'live';
     else if (type === 'results') status = 'completed';
 
-    // Xử lý link (Fix #4)
     let matchUrl = vlrMatch.match_page || vlrMatch.match_url || '';
     if (matchUrl && !matchUrl.startsWith('http')) {
         matchUrl = `https://www.vlr.gg${matchUrl}`;
@@ -508,7 +484,6 @@ const normalizeVlrMatch = (vlrMatch, type) => {
         stage: vlrMatch.match_series || vlrMatch.round_info || '',
         team1: vlrMatch.team1 || vlrMatch.team_one_name || 'TBD',
         team2: vlrMatch.team2 || vlrMatch.team_two_name || 'TBD',
-        // Fix #1: Score handle null/undefined
         score1: vlrMatch.score1 ?? vlrMatch.team_one_score ?? (type === 'live_score' ? 0 : null),
         score2: vlrMatch.score2 ?? vlrMatch.team_two_score ?? (type === 'live_score' ? 0 : null),
         time: timeISO,
@@ -546,15 +521,12 @@ const fetchValorantData = async () => {
 
         let newEvents = [];
 
-        // LIVE
         if (liveRes.data?.segments) {
             newEvents = newEvents.concat(liveRes.data.segments.map(m => normalizeVlrMatch(m, 'live_score')));
         }
-        // UPCOMING
         if (upcomingRes.data?.segments) {
             newEvents = newEvents.concat(upcomingRes.data.segments.map(m => normalizeVlrMatch(m, 'upcoming')));
         }
-        // RESULTS (Limit 30 recent)
         if (resultsRes.data?.segments) {
             newEvents = newEvents.concat(resultsRes.data.segments.slice(0, 30).map(m => normalizeVlrMatch(m, 'results')));
         }
@@ -566,11 +538,10 @@ const fetchValorantData = async () => {
     }
 };
 
-// --- MAIN APP ---
 export default function App() {
   const [activeGame, setActiveGame] = useState('all');
   const [viewMode, setViewMode] = useState('schedule');
-  const [selectedTournaments, setSelectedTournaments] = useState([]); // Array các giải đấu được chọn (Filter #7)
+  const [selectedTournaments, setSelectedTournaments] = useState([]);
   
   const [events, setEvents] = useState(() => {
       try {
@@ -590,7 +561,6 @@ export default function App() {
       }
   }, [events]);
 
-  // Favicon
   useEffect(() => {
     const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
     link.type = 'image/svg+xml';
@@ -737,14 +707,11 @@ export default function App() {
       return () => clearInterval(interval);
   }, []);
   
-  // --- LOGIC LỌC (FILTER) & TOURNAMENT LIST ---
   const activeTournaments = useMemo(() => {
-      // Lấy danh sách giải đấu duy nhất từ các sự kiện hiện có, phụ thuộc vào game đang chọn
       let sourceEvents = events;
       if (activeGame !== 'all') {
           sourceEvents = events.filter(e => e.game === activeGame);
       }
-      // Chỉ lấy các giải có trận sắp tới hoặc live để filter cho gọn
       const relevantEvents = sourceEvents.filter(e => e.status !== 'completed');
       const tournaments = [...new Set(relevantEvents.map(e => e.tournament))];
       return tournaments.sort();
@@ -760,12 +727,10 @@ export default function App() {
   const filteredEvents = useMemo(() => {
     let result = events;
     
-    // Lọc theo Game
     if (activeGame !== 'all') {
         result = result.filter(e => e.game === activeGame);
     }
 
-    // Lọc theo Tournament (Multiselect) #7
     if (selectedTournaments.length > 0) {
         result = result.filter(e => selectedTournaments.includes(e.tournament));
     }
@@ -863,7 +828,6 @@ export default function App() {
         <main className="flex-1 min-w-0 relative">
             {viewMode === 'schedule' && (
                 <div className="space-y-6">
-                    {/* TOURNAMENT FILTER BAR (Fix #7) */}
                     {activeTournaments.length > 0 && (
                         <div className="bg-gray-900/50 border border-gray-800 p-3 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-hide flex items-center gap-2">
                             <div className="flex items-center gap-1 text-gray-500 text-xs mr-2 font-bold uppercase tracking-wider">
