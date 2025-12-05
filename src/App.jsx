@@ -438,8 +438,7 @@ const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
 };
 
 // --- VALORANT API INTEGRATION ---
-const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
-const VLR_BASE_URL = 'https://vlrggapi.vercel.app';
+const VLR_BASE_URL = '/api/vlr';
 
 const parseRelativeTime = (timeAgoStr) => {
     if (!timeAgoStr || typeof timeAgoStr !== 'string') return null;
@@ -532,8 +531,9 @@ const normalizeVlrMatch = (vlrMatch, type) => {
 const fetchValorantData = async () => {
     try {
         const fetchWithProxy = async (endpoint) => {
-            const targetUrl = `${VLR_BASE_URL}${endpoint}`;
-            const res = await fetch(`${CORS_PROXY}${encodeURIComponent(targetUrl)}`);
+            const url = `${VLR_BASE_URL}${endpoint}`;
+            
+            const res = await fetch(url);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             return res.json();
         };
