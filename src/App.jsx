@@ -3,30 +3,22 @@ import {
   Calendar as CalendarIcon, List, Trophy, ChevronLeft, ChevronRight, 
   Monitor, MapPin, X, CheckCircle, AlertCircle, Info, Edit3, 
   Trash2, Plus, Save, Clock, GripHorizontal, Download, Upload, Timer, History,
-  CloudDownload, Target, Smartphone, Crosshair, Clipboard, FileJson, Filter, ExternalLink, RefreshCw
+  CloudDownload, Target, Smartphone, Crosshair, Clipboard, FileJson, Filter, ExternalLink, RefreshCw, Eye, EyeOff
 } from 'lucide-react';
 
 // --- INITIAL DATA ---
 const INITIAL_EVENTS = [
-  // --- VALORANT ---
-  { id: 'val-lr4', game: 'valorant', tournament: 'Game Changers 2025', stage: 'Lower Round 4', team1: 'KRÜ Blaze', team2: 'MIBR GC', score1: 0, score2: 2, time: '2025-11-28T18:35:00+07:00', status: 'completed' },
-  { id: 'val-uf', game: 'valorant', tournament: 'Game Changers 2025', stage: 'Upper Final', team1: 'Team Liquid Brazil', team2: 'Shopify Rebellion', score1: 2, score2: 1, time: '2025-11-28T15:00:00+07:00', status: 'completed' },
-  { id: 'val-lf', game: 'valorant', tournament: 'Game Changers 2025', stage: 'Lower Final', team1: 'Shopify Rebellion', team2: 'MIBR GC', score1: 3, score2: 1, time: '2025-11-29T15:00:00+07:00', status: 'completed' },
+  // --- VALORANT (Dữ liệu mẫu, sẽ được API cập nhật đè lên) ---
   { id: 'val-gf', game: 'valorant', tournament: 'Game Changers 2025', stage: 'Grand Final', team1: 'Team Liquid Brazil', team2: 'TBD', score1: null, score2: null, time: '2025-11-30T15:00:00+07:00', status: 'upcoming' },
 
   // --- PUBG PGC 2025 ---
   { id: 'pgc-gsa-m1', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 1', team1: 'FN Pocheon', score1: 10, details: { map: 'Miramar', kills: 10, totalPoints: 20 }, time: '2025-11-28T17:00:00+07:00', status: 'completed', type: 'battle_royale' },
   { id: 'pgc-gsa-m2', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 2', team1: 'Four Angry Men', score1: 10, details: { map: 'Miramar', kills: 6, totalPoints: 16 }, time: '2025-11-28T17:45:00+07:00', status: 'completed', type: 'battle_royale' },
   { id: 'pgc-gsa-m3', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 3', team1: 'The Expendables', score1: 10, details: { map: 'Taego', kills: 5, totalPoints: 15 }, time: '2025-11-28T18:30:00+07:00', status: 'completed', type: 'battle_royale' },
-  { id: 'pgc-gsa-m4', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 4', team1: 'Twisted Minds', score1: 10, details: { map: 'Rondo', kills: 13, totalPoints: 23 }, time: '2025-11-28T19:15:00+07:00', status: 'completed', type: 'battle_royale' },
-  { id: 'pgc-gsa-m5', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 5', team1: 'FURIA', score1: 10, details: { map: 'Erangel', kills: 9, totalPoints: 19 }, time: '2025-11-28T20:00:00+07:00', status: 'completed', type: 'battle_royale' },
-  { id: 'pgc-gsa-m6', game: 'pubg', tournament: 'PGC 2025', stage: 'Group A - Match 6', team1: 'Twisted Minds', score1: 10, details: { map: 'Erangel', kills: 12, totalPoints: 22 }, time: '2025-11-28T20:45:00+07:00', status: 'completed', type: 'battle_royale' },
-
+  
   // --- AoV AIC 2025 ---
   { id: 'aic-ub-qf1', game: 'aov', tournament: 'AIC 2025', stage: 'Upper QF', team1: 'FULL SENSE', team2: 'HKA', score1: 3, score2: 0, time: '2025-11-28T14:00:00+07:00', status: 'completed' },
   { id: 'aic-ub-qf2', game: 'aov', tournament: 'AIC 2025', stage: 'Upper QF', team1: 'PSG', team2: 'FL', score1: 2, score2: 3, time: '2025-11-28T16:00:00+07:00', status: 'completed' },
-  { id: 'aic-lb-r1-1', game: 'aov', tournament: 'AIC 2025', stage: 'Lower R1', team1: 'HKA', team2: 'PSG', score1: 1, score2: 3, time: '2025-11-29T14:00:00+07:00', status: 'completed' },
-  { id: 'aic-ub-sf1', game: 'aov', tournament: 'AIC 2025', stage: 'Upper Semis', team1: 'FULL SENSE', team2: 'Team Flash', score1: 4, score2: 1, time: '2025-11-30T14:00:00+07:00', status: 'completed' },
 ];
 
 const GAMES = {
@@ -61,6 +53,7 @@ const getComputedStatus = (event, allEvents) => {
     
     if (eventTime > now) return 'upcoming';
 
+    // Logic xác định Live giả lập nếu không có API realtime
     const sameDayEvents = allEvents.filter(e => 
         e.game === event.game && 
         new Date(e.time).toDateString() === eventTime.toDateString()
@@ -68,6 +61,8 @@ const getComputedStatus = (event, allEvents) => {
 
     const index = sameDayEvents.findIndex(e => e.id === event.id);
     
+    // Nếu API đã trả về 'completed' thì hàm này trả về 'completed' ở dòng đầu rồi.
+    // Logic dưới đây chỉ dự phòng cho các trận nhập tay.
     if (sameDayEvents.length === 1) return 'live';
 
     if (index < sameDayEvents.length - 1) {
@@ -266,23 +261,25 @@ const CountdownDisplay = ({ targetDate }) => {
     return (<div className="flex gap-2 text-xs font-mono text-blue-300 bg-blue-900/30 px-2 py-1 rounded border border-blue-500/30"><span className="flex items-center gap-1"><Timer size={10}/> Sắp diễn ra:</span><span>{timeLeft.days > 0 && `${timeLeft.days}d `}{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span></div>);
 };
 
-// --- COMPONENT: SCHEDULE ITEM (UPDATED: Larger Text + Spacing) ---
+// --- COMPONENT: SCHEDULE ITEM (REMAKELOGIC) ---
 const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
     const isBattleRoyale = event.game === 'pubg' || event.type === 'battle_royale';
-    const timeStr = new Date(event.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
+    const isValorant = event.game === 'valorant';
     
-    // Use Computed Status logic
+    // Xử lý hiển thị thời gian
+    const timeStr = new Date(event.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'});
     const computedStatus = getComputedStatus(event, allEvents || []);
     const isLive = computedStatus === 'live';
-    const isUpcoming = computedStatus === 'upcoming';
     const isCompleted = computedStatus === 'completed';
 
     const statusBadge = isLive ? (
-        <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold animate-pulse">LIVE</span>
+        <span className="text-[10px] bg-red-600 text-white px-2 py-0.5 rounded font-bold animate-pulse flex items-center gap-1">
+            <span className="w-1.5 h-1.5 bg-white rounded-full"></span> LIVE
+        </span>
     ) : isCompleted ? (
-        <span className="text-[10px] bg-gray-700 text-gray-400 px-2 py-0.5 rounded font-bold">Xong</span>
+        <span className="text-[10px] bg-gray-700 text-gray-400 px-2 py-0.5 rounded font-bold">Ended</span>
     ) : (
-        <span className="text-[10px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded font-bold">Sắp tới</span>
+        <span className="text-[10px] bg-blue-900 text-blue-200 px-2 py-0.5 rounded font-bold">Upcoming</span>
     );
 
     if (isBattleRoyale) {
@@ -292,7 +289,6 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                 <div className="flex justify-between items-start">
                     <div className="flex items-center gap-3">
                          <div className="flex flex-col items-center min-w-[50px]">
-                            {/* Bump text size */}
                             <span className={`text-xl font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</span>
                             {!compact && <span className="text-[10px] bg-orange-900/50 text-orange-400 px-2 rounded uppercase font-bold tracking-wider">PUBG</span>}
                         </div>
@@ -301,11 +297,9 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
                                   onClick={(e) => { e.stopPropagation(); onFilterTournament && onFilterTournament(event.tournament); }}
                                   title="Xem tất cả trận của giải này">
                                  <span className="group-hover:text-blue-400 group-hover:underline">{event.tournament}</span>
-                                 <ExternalLink size={10} className="text-gray-500 group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-opacity"/>
                                  {statusBadge}
                              </div>
                              <div className="text-sm text-gray-400">{event.stage} • {event.details?.map || 'TBD'}</div>
-                             {isUpcoming && !compact && <div className="mt-1"><CountdownDisplay targetDate={event.time} /></div>}
                         </div>
                     </div>
                 </div>
@@ -322,48 +316,93 @@ const ScheduleItem = ({ event, compact, allEvents, onFilterTournament }) => {
         );
     }
 
+    // Default layout (LoL, AoV, Valorant)
     return (
-        <div className={`bg-gray-800 rounded hover:bg-gray-750 transition flex flex-col md:flex-row items-start md:items-center gap-4 border-l-4 ${isLive ? 'border-red-500 ring-1 ring-red-500/20' : 'border-gray-700'} ${compact ? 'p-3' : 'p-5'}`}>
-            <div className="min-w-[60px] text-center">
-                {/* Bump text size */}
+        <div className={`bg-gray-800 rounded hover:bg-gray-750 transition flex flex-col md:flex-row items-start md:items-center gap-4 border-l-4 ${isLive ? 'border-red-500 ring-1 ring-red-500/20' : (GAMES[event.game]?.color || 'border-gray-700').replace('bg-', 'border-')} ${compact ? 'p-3' : 'p-4'}`}>
+            
+            <div className="min-w-[60px] flex flex-col items-center justify-center">
                 <div className={`text-xl font-bold ${isLive ? 'text-red-400' : 'text-white'}`}>{timeStr}</div>
-                {!compact && <div className={`text-[10px] px-2 py-0.5 rounded-full inline-block mt-1 uppercase ${GAMES[event.game]?.color || 'bg-gray-600'} text-white`}>
-                    {event.game}
-                </div>}
+                {!compact && (
+                    <div className="mt-1 flex flex-col items-center">
+                        {isValorant && event.details?.flag1 && event.details?.flag2 ? (
+                            <div className="flex gap-1 opacity-70 mb-1">
+                                <span className={`fi fi-${event.details.flag1} w-3 h-2`}></span>
+                                <span className={`fi fi-${event.details.flag2} w-3 h-2`}></span>
+                            </div>
+                        ) : null}
+                        {/* Always show Tag for Valorant as requested */}
+                        <div className={`text-[9px] px-2 py-0.5 rounded-full uppercase ${GAMES[event.game]?.color || 'bg-gray-600'} text-white`}>
+                            {event.game}
+                        </div>
+                    </div>
+                )}
             </div>
+
             <div className="flex-1 w-full">
-                {/* Increased bottom margin (mb-3) to separate from team names */}
-                <div className="text-sm text-gray-400 mb-3 flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 mb-2">
                     <span 
-                        className="font-semibold flex items-center gap-1 cursor-pointer hover:text-blue-400 hover:underline group"
+                        className="text-xs font-bold text-gray-300 hover:text-blue-400 cursor-pointer flex items-center gap-1"
                         onClick={(e) => { e.stopPropagation(); onFilterTournament && onFilterTournament(event.tournament); }}
-                        title="Click để xem lịch thi đấu giải này"
                     >
+                        <Trophy size={12} className="text-yellow-500"/>
                         {event.tournament}
-                        <ExternalLink size={10} className="opacity-50 group-hover:opacity-100 transition"/>
-                    </span> 
-                    • {event.stage}
+                    </span>
+                    <span className="text-xs text-gray-500">• {event.stage}</span>
                     {statusBadge}
+                    {isValorant && isLive && event.details?.map && (
+                        <span className="text-[10px] bg-gray-700 text-green-400 px-1.5 py-0.5 rounded border border-gray-600 font-mono">
+                            CURRENT MAP: {event.details.map}
+                        </span>
+                    )}
                 </div>
-                {/* Bump text size to text-base */}
-                <div className="flex items-center gap-4 text-base">
-                    <div className={`flex-1 text-right font-medium ${event.score1 > event.score2 ? 'text-yellow-400' : 'text-gray-200'}`}>
-                        {event.team1}
+
+                <div className="flex items-center justify-between bg-gray-900/50 p-2 rounded-lg border border-gray-800">
+                    <div className={`flex-1 flex items-center gap-3 ${compact ? 'min-w-0' : ''}`}>
+                        {isValorant && event.details?.team1_logo && !compact && (
+                            <img src={event.details.team1_logo} alt={event.team1} className="w-8 h-8 object-contain" />
+                        )}
+                        <div className={`font-bold ${event.score1 > event.score2 ? 'text-white' : 'text-gray-400'} ${compact ? 'truncate' : ''}`}>
+                            {event.team1}
+                        </div>
                     </div>
-                    <div className={`px-3 py-1 rounded font-mono font-bold whitespace-nowrap text-lg ${isLive ? 'bg-red-900/50 text-red-200' : 'bg-gray-900 text-white'}`}>
-                        {event.score1 ?? '-'} : {event.score2 ?? '-'}
+
+                    <div className="px-4 flex flex-col items-center">
+                        <div className={`text-xl font-mono font-bold tracking-widest ${isLive ? 'text-red-500' : 'text-white'}`}>
+                            {event.score1} - {event.score2}
+                        </div>
+                        {isValorant && isLive && event.details?.round_ct1 !== undefined && (
+                           <div className="text-[9px] text-gray-500 flex gap-1 mt-0.5">
+                                <span title="CT Rounds" className="text-blue-400">{event.details.round_ct1 || 0}</span>
+                                <span>/</span>
+                                <span title="T Rounds" className="text-orange-400">{event.details.round_t1 || 0}</span>
+                           </div>
+                        )}
                     </div>
-                    <div className={`flex-1 text-left font-medium ${event.score2 > event.score1 ? 'text-yellow-400' : 'text-gray-200'}`}>
-                        {event.team2 || 'TBD'}
+
+                    <div className={`flex-1 flex items-center justify-end gap-3 ${compact ? 'min-w-0' : ''}`}>
+                        <div className={`font-bold text-right ${event.score2 > event.score1 ? 'text-white' : 'text-gray-400'} ${compact ? 'truncate' : ''}`}>
+                            {event.team2 || 'TBD'}
+                        </div>
+                        {isValorant && event.details?.team2_logo && !compact && (
+                            <img src={event.details.team2_logo} alt={event.team2} className="w-8 h-8 object-contain" />
+                        )}
                     </div>
                 </div>
-                {isUpcoming && !compact && <div className="mt-2"><CountdownDisplay targetDate={event.time} /></div>}
+                
+                <div className="mt-1 flex justify-between items-center">
+                    {!isCompleted && !isLive && !compact && <CountdownDisplay targetDate={event.time} />}
+                    {isValorant && event.details?.match_page && (
+                        <a href={event.details.match_page} target="_blank" rel="noreferrer" className="text-[10px] text-gray-500 hover:text-white flex items-center gap-1 ml-auto">
+                            Chi tiết VLR.gg <ExternalLink size={10}/>
+                        </a>
+                    )}
+                </div>
             </div>
         </div>
     );
 };
 
-// --- COMPONENT: DAY DETAILS MODAL (UPDATED: Borders) ---
+// --- COMPONENT: DAY DETAILS MODAL ---
 const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
     return (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 animate-fade-in">
@@ -376,7 +415,6 @@ const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
                     <button onClick={onClose} className="hover:bg-gray-700 p-1 rounded text-gray-400 hover:text-white transition"><X size={20}/></button>
                  </div>
                  <div className="space-y-0">
-                    {/* Added border-b to separate items nicely */}
                     {events.map(event => (
                         <div key={event.id} className="relative group border-b border-gray-700 last:border-0 pb-3 mb-3 last:pb-0 last:mb-0">
                             <ScheduleItem event={event} allEvents={allEvents} compact={true} />
@@ -399,14 +437,142 @@ const DayDetailsModal = ({ date, events, allEvents, onClose, onEdit }) => {
     );
 };
 
-// --- MAIN APP COMPONENT ---
+// --- VALORANT API INTEGRATION ---
+const CORS_PROXY = 'https://api.allorigins.win/raw?url=';
+const VLR_BASE_URL = 'https://vlrggapi.vercel.app';
+
+const parseRelativeTime = (timeAgoStr) => {
+    if (!timeAgoStr || typeof timeAgoStr !== 'string') return null;
+    
+    // Nếu API trả về chuỗi ISO thì dùng luôn
+    if (timeAgoStr.includes('T') && timeAgoStr.includes('Z')) return timeAgoStr;
+
+    const now = new Date();
+    // Regex đơn giản để bắt "2h", "44m", "1d", "yesterday"
+    if (timeAgoStr.toLowerCase().includes('yesterday')) {
+        now.setDate(now.getDate() - 1);
+        return now.toISOString();
+    }
+
+    const matches = timeAgoStr.match(/(\d+)([hmd])/g);
+    if (!matches) return null;
+
+    matches.forEach(part => {
+        const value = parseInt(part.slice(0, -1));
+        const unit = part.slice(-1);
+        if (unit === 'd') now.setDate(now.getDate() - value);
+        if (unit === 'h') now.setHours(now.getHours() - value);
+        if (unit === 'm') now.setMinutes(now.getMinutes() - value);
+    });
+
+    return now.toISOString();
+}
+
+const extractIdFromUrl = (url) => {
+    if (!url) return `val-manual-${Date.now()}`;
+    const match = url.match(/\/(\d+)\//);
+    return match ? `val-${match[1]}` : `val-${Date.now()}`;
+};
+
+const normalizeVlrMatch = (vlrMatch, type) => {
+    let timeISO = new Date().toISOString(); // Default fallback
+    
+    if (vlrMatch.unix_timestamp) {
+        let timestampStr = vlrMatch.unix_timestamp;
+        // Kiểm tra nếu là format SQL (không có T hoặc Z)
+        if (!timestampStr.includes('T') && !timestampStr.includes('Z')) {
+             // Thay khoảng trắng bằng T và thêm Z để báo hiệu UTC
+             timestampStr = timestampStr.replace(' ', 'T') + 'Z';
+        }
+        timeISO = new Date(timestampStr).toISOString();
+    } 
+    // 2. Nếu là Results, thường không có timestamp chính xác, dùng time_completed "ago"
+    else if (type === 'results' && vlrMatch.time_completed) {
+        const relTime = parseRelativeTime(vlrMatch.time_completed);
+        if (relTime) timeISO = relTime;
+    }
+
+    let status = 'upcoming';
+    if (type === 'live_score') status = 'live';
+    else if (type === 'results') status = 'completed';
+
+    // Xử lý link (Fix #4)
+    let matchUrl = vlrMatch.match_page || vlrMatch.match_url || '';
+    if (matchUrl && !matchUrl.startsWith('http')) {
+        matchUrl = `https://www.vlr.gg${matchUrl}`;
+    }
+
+    return {
+        id: extractIdFromUrl(matchUrl),
+        game: 'valorant',
+        tournament: vlrMatch.match_event || vlrMatch.tournament_name || 'Unknown Tournament',
+        stage: vlrMatch.match_series || vlrMatch.round_info || '',
+        team1: vlrMatch.team1 || vlrMatch.team_one_name || 'TBD',
+        team2: vlrMatch.team2 || vlrMatch.team_two_name || 'TBD',
+        // Fix #1: Score handle null/undefined
+        score1: vlrMatch.score1 ?? vlrMatch.team_one_score ?? (type === 'live_score' ? 0 : null),
+        score2: vlrMatch.score2 ?? vlrMatch.team_two_score ?? (type === 'live_score' ? 0 : null),
+        time: timeISO,
+        status: status,
+        details: {
+            map: vlrMatch.current_map || '',
+            team1_logo: vlrMatch.team1_logo || vlrMatch.team_logo || '',
+            team2_logo: vlrMatch.team2_logo || '',
+            flag1: vlrMatch.flag1 || '',
+            flag2: vlrMatch.flag2 || '',
+            round_ct1: vlrMatch.team1_round_ct,
+            round_t1: vlrMatch.team1_round_t,   
+            round_ct2: vlrMatch.team2_round_ct,
+            round_t2: vlrMatch.team2_round_t,
+            match_page: matchUrl
+        }
+    };
+};
+
+const fetchValorantData = async () => {
+    try {
+        const fetchWithProxy = async (endpoint) => {
+            const targetUrl = `${VLR_BASE_URL}${endpoint}`;
+            const res = await fetch(`${CORS_PROXY}${encodeURIComponent(targetUrl)}`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.json();
+        };
+
+        const [upcomingRes, liveRes, resultsRes] = await Promise.all([
+            fetchWithProxy('/match?q=upcoming'),
+            fetchWithProxy('/match?q=live_score'),
+            fetchWithProxy('/match?q=results') 
+        ]);
+
+        let newEvents = [];
+
+        // LIVE
+        if (liveRes.data?.segments) {
+            newEvents = newEvents.concat(liveRes.data.segments.map(m => normalizeVlrMatch(m, 'live_score')));
+        }
+        // UPCOMING
+        if (upcomingRes.data?.segments) {
+            newEvents = newEvents.concat(upcomingRes.data.segments.map(m => normalizeVlrMatch(m, 'upcoming')));
+        }
+        // RESULTS (Limit 30 recent)
+        if (resultsRes.data?.segments) {
+            newEvents = newEvents.concat(resultsRes.data.segments.slice(0, 30).map(m => normalizeVlrMatch(m, 'results')));
+        }
+
+        return newEvents;
+    } catch (error) {
+        console.error("Lỗi fetch VLR API:", error);
+        return [];
+    }
+};
+
+// --- MAIN APP ---
 export default function App() {
   const [activeGame, setActiveGame] = useState('all');
   const [viewMode, setViewMode] = useState('schedule');
+  const [selectedTournaments, setSelectedTournaments] = useState([]); // Array các giải đấu được chọn (Filter #7)
   
-  // --- LOCAL STORAGE LOGIC START ---
   const [events, setEvents] = useState(() => {
-      // 1. Kiểm tra localStorage khi khởi động
       try {
           const savedData = localStorage.getItem('esport_hub_data');
           return savedData ? JSON.parse(savedData) : INITIAL_EVENTS;
@@ -416,7 +582,6 @@ export default function App() {
       }
   });
 
-  // 2. Tự động lưu khi events thay đổi
   useEffect(() => {
       try {
           localStorage.setItem('esport_hub_data', JSON.stringify(events));
@@ -424,18 +589,15 @@ export default function App() {
           console.error("Lỗi lưu localStorage:", e);
       }
   }, [events]);
-  // --- LOCAL STORAGE LOGIC END ---
 
-  // --- AUTO FAVICON LOGIC (NEW) ---
+  // Favicon
   useEffect(() => {
-    // Tạo link favicon động bằng SVG
     const link = document.querySelector("link[rel*='icon']") || document.createElement('link');
     link.type = 'image/svg+xml';
     link.rel = 'icon';
     link.href = `data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23fbbf24%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M6 9H4.5a2.5 2.5 0 0 1 0-5H6%22/><path d=%22M18 9h1.5a2.5 2.5 0 0 0 0-5H18%22/><path d=%22M4 22h16%22/><path d=%22M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22%22/><path d=%22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22%22/><path d=%22M18 2H6v7a6 6 0 0 0 12 0V2Z%22/></svg>`;
     document.head.appendChild(link);
   }, []);
-  // --- END FAVICON LOGIC ---
 
   const [isUpdating, setIsUpdating] = useState(false);
   const [notification, setNotification] = useState(null);
@@ -446,7 +608,6 @@ export default function App() {
   const [selectedDayDetails, setSelectedDayDetails] = useState(null); 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [filterTournament, setFilterTournament] = useState(null);
   
   const fileInputRef = useRef(null);
 
@@ -550,30 +711,73 @@ export default function App() {
       } 
   };
 
-  useEffect(() => { handleImportFromGist(true); }, []);
+  const handleAutoUpdateValorant = async () => {
+    setIsUpdating(true);
+    try {
+        const vlrEvents = await fetchValorantData();
+        if (vlrEvents.length > 0) {
+            setEvents(prevEvents => {
+                const { mergedList } = mergeEvents(prevEvents, vlrEvents);
+                return mergedList;
+            });
+            setLastUpdated(new Date());
+            showNotification('success', `Đã cập nhật ${vlrEvents.length} trận đấu Valorant từ VLR.gg!`);
+        }
+    } catch (e) {
+        console.error("Lỗi cập nhật Valorant:", e);
+    } finally {
+        setIsUpdating(false);
+    }
+  };
+
+  useEffect(() => {
+      handleImportFromGist(true);
+      handleAutoUpdateValorant();
+      const interval = setInterval(handleAutoUpdateValorant, 5 * 60 * 1000);
+      return () => clearInterval(interval);
+  }, []);
   
-  // --- UPDATED LOGIC: SORT EVENTS BEFORE GROUPING ---
-  // Fix issue where old data appears above new data due to insertion order
+  // --- LOGIC LỌC (FILTER) & TOURNAMENT LIST ---
+  const activeTournaments = useMemo(() => {
+      // Lấy danh sách giải đấu duy nhất từ các sự kiện hiện có, phụ thuộc vào game đang chọn
+      let sourceEvents = events;
+      if (activeGame !== 'all') {
+          sourceEvents = events.filter(e => e.game === activeGame);
+      }
+      // Chỉ lấy các giải có trận sắp tới hoặc live để filter cho gọn
+      const relevantEvents = sourceEvents.filter(e => e.status !== 'completed');
+      const tournaments = [...new Set(relevantEvents.map(e => e.tournament))];
+      return tournaments.sort();
+  }, [events, activeGame]);
+
+  const toggleTournamentFilter = (tourney) => {
+      setSelectedTournaments(prev => {
+          if (prev.includes(tourney)) return prev.filter(t => t !== tourney);
+          return [...prev, tourney];
+      });
+  };
+
   const filteredEvents = useMemo(() => {
     let result = events;
-    if (filterTournament) {
-        result = result.filter(e => e.tournament === filterTournament);
-    } else {
-        if (activeGame !== 'all') {
-            result = result.filter(e => e.game === activeGame);
-        }
+    
+    // Lọc theo Game
+    if (activeGame !== 'all') {
+        result = result.filter(e => e.game === activeGame);
     }
-    // SORT HERE: Ensure everything is sorted by time ascending (oldest to newest)
+
+    // Lọc theo Tournament (Multiselect) #7
+    if (selectedTournaments.length > 0) {
+        result = result.filter(e => selectedTournaments.includes(e.tournament));
+    }
+
     return [...result].sort((a, b) => new Date(a.time) - new Date(b.time));
-  }, [activeGame, events, filterTournament]);
+  }, [activeGame, events, selectedTournaments]);
 
   const { upcomingGroups, pastGroups } = useMemo(() => { 
-      // Use Arrays instead of Objects to guarantee order
       const groups = { upcomingGroups: [], pastGroups: [] }; 
       const today = new Date(); 
       today.setHours(0,0,0,0); 
       
-      // Helper to add event to group array
       const addToGroupList = (list, event) => {
           const eDate = new Date(event.time);
           const dateStr = eDate.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' });
@@ -598,11 +802,7 @@ export default function App() {
           } 
       }); 
       
-      // Ensure groups themselves are sorted
-      // Upcoming: Soonest first (Ascending)
       groups.upcomingGroups.sort((a, b) => a.dateValue - b.dateValue);
-      
-      // Past: Most recent first (Descending)
       groups.pastGroups.sort((a, b) => b.dateValue - a.dateValue);
 
       return groups; 
@@ -635,7 +835,7 @@ export default function App() {
 
       <header className="bg-gray-900 border-b border-gray-800 p-4 sticky top-0 z-30 shadow-lg">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setFilterTournament(null); setActiveGame('all'); }}>
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => { setSelectedTournaments([]); setActiveGame('all'); }}>
             <div className="bg-gradient-to-br from-blue-600 to-purple-600 p-2 rounded-lg">
                 <Trophy className="w-6 h-6 text-white" />
             </div>
@@ -646,7 +846,7 @@ export default function App() {
           </div>
           <div className="flex bg-gray-800 p-1 rounded-lg overflow-x-auto max-w-full"><button onClick={() => setViewMode('schedule')} className={`px-4 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 whitespace-nowrap ${viewMode === 'schedule' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}><List size={16} /> Danh sách</button><button onClick={() => setViewMode('calendar')} className={`px-4 py-2 rounded-md text-sm font-medium transition flex items-center gap-2 whitespace-nowrap ${viewMode === 'calendar' ? 'bg-gray-700 text-white shadow' : 'text-gray-400 hover:text-white'}`}><CalendarIcon size={16} /> Lịch (Calendar)</button></div>
           <div className="flex items-center gap-3">
-              <div className="flex gap-1 mr-2"><button onClick={() => handleImportFromGist(false)} disabled={isUpdating} className={`p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`} title="Cập nhật từ Gist"><CloudDownload size={18} className={isUpdating ? 'animate-bounce' : ''} /></button><button onClick={handleExport} className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition" title="Xuất dữ liệu"><Download size={18} /></button><button onClick={() => setIsImportModalOpen(true)} className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition" title="Nhập dữ liệu"><Upload size={18} /></button></div>
+              <div className="flex gap-1 mr-2"><button onClick={() => { handleImportFromGist(false); handleAutoUpdateValorant(); }} disabled={isUpdating} className={`p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition ${isUpdating ? 'opacity-50 cursor-not-allowed' : ''}`} title="Cập nhật (Gist + VLR)"><CloudDownload size={18} className={isUpdating ? 'animate-bounce' : ''} /></button><button onClick={handleExport} className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition" title="Xuất dữ liệu"><Download size={18} /></button><button onClick={() => setIsImportModalOpen(true)} className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg transition" title="Nhập dữ liệu"><Upload size={18} /></button></div>
               <div className="flex items-center gap-2 bg-gray-800 px-3 py-1.5 rounded-full border border-gray-700"><span className={`text-xs font-bold ${isAdminMode ? 'text-green-400' : 'text-gray-500'}`}>{isAdminMode ? 'Admin: ON' : 'Admin: OFF'}</span><button onClick={() => setIsAdminMode(!isAdminMode)} className={`w-10 h-5 rounded-full p-1 transition-colors duration-300 ${isAdminMode ? 'bg-green-600' : 'bg-gray-600'}`}><div className={`w-3 h-3 bg-white rounded-full transition-transform duration-300 ${isAdminMode ? 'translate-x-5' : 'translate-x-0'}`} /></button></div>
           </div>
         </div>
@@ -655,7 +855,7 @@ export default function App() {
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row mt-6 gap-6 px-4 pb-12 relative">
         <aside className="w-full md:w-64 flex-shrink-0 md:sticky md:top-24 h-fit transition-all">
             <h2 className="text-gray-400 font-bold text-xs uppercase tracking-wider mb-4 px-2">Môn Thi Đấu</h2>
-            <div className="space-y-2">{Object.entries(GAMES).map(([key, data]) => (<button key={key} onClick={() => { setActiveGame(key); setFilterTournament(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition text-left ${activeGame === key && !filterTournament ? 'bg-gray-800 text-white border-l-4 border-blue-500 shadow-md' : 'text-gray-400 hover:bg-gray-900 hover:text-gray-200'}`}><data.icon size={18} className={activeGame === key && !filterTournament ? 'text-blue-400' : 'text-gray-500'} /><span className="font-medium text-sm">{data.label}</span>{activeGame === key && !filterTournament && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500"></div>}</button>))}</div>
+            <div className="space-y-2">{Object.entries(GAMES).map(([key, data]) => (<button key={key} onClick={() => { setActiveGame(key); setSelectedTournaments([]); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition text-left ${activeGame === key ? 'bg-gray-800 text-white border-l-4 border-blue-500 shadow-md' : 'text-gray-400 hover:bg-gray-900 hover:text-gray-200'}`}><data.icon size={18} className={activeGame === key ? 'text-blue-400' : 'text-gray-500'} /><span className="font-medium text-sm">{data.label}</span>{activeGame === key && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-500"></div>}</button>))}</div>
              {lastUpdated && (<div className="mt-4 px-4"><p className="text-[10px] text-gray-500 italic flex items-center gap-1"><CloudDownload size={10}/> Latest data update: <br/> {lastUpdated.toLocaleString('vi-VN')}</p></div>)}
              {isAdminMode && (<div className="mt-6 bg-blue-900/20 p-4 rounded-xl border border-blue-900/50 text-xs text-blue-200"><p className="font-bold mb-1">Chế độ Admin:</p><ul className="list-disc pl-4 space-y-1 text-gray-400"><li>Sửa trực tiếp trận đấu để cập nhật kết quả.</li><li>Bấm vào ngày trong Lịch để xem chi tiết & chỉnh sửa.</li></ul></div>)}
         </aside>
@@ -663,34 +863,43 @@ export default function App() {
         <main className="flex-1 min-w-0 relative">
             {viewMode === 'schedule' && (
                 <div className="space-y-6">
-                    {/* Navigation Filter Banner */}
-                    {filterTournament && (
-                        <div className="bg-blue-900/40 border border-blue-700/50 rounded-lg p-3 flex justify-between items-center animate-slide-in-up">
-                            <div className="flex items-center gap-2">
-                                <Filter size={16} className="text-blue-400"/>
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-blue-200 uppercase tracking-wider">Đang xem giải đấu</span>
-                                    <span className="text-sm text-white font-bold">{filterTournament}</span>
-                                </div>
+                    {/* TOURNAMENT FILTER BAR (Fix #7) */}
+                    {activeTournaments.length > 0 && (
+                        <div className="bg-gray-900/50 border border-gray-800 p-3 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-hide flex items-center gap-2">
+                            <div className="flex items-center gap-1 text-gray-500 text-xs mr-2 font-bold uppercase tracking-wider">
+                                <Filter size={14} /> Giải đấu:
                             </div>
-                            <button onClick={() => setFilterTournament(null)} className="text-xs flex items-center gap-1 bg-blue-700 hover:bg-blue-600 text-white px-3 py-1.5 rounded transition shadow">
-                                <RefreshCw size={12}/> Hiện tất cả
-                            </button>
+                            {activeTournaments.map(tourney => (
+                                <button
+                                    key={tourney}
+                                    onClick={() => toggleTournamentFilter(tourney)}
+                                    className={`px-3 py-1 rounded-full text-xs font-medium transition border ${
+                                        selectedTournaments.includes(tourney) 
+                                        ? 'bg-blue-600 border-blue-500 text-white' 
+                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white'
+                                    }`}
+                                >
+                                    {tourney}
+                                </button>
+                            ))}
+                            {selectedTournaments.length > 0 && (
+                                <button onClick={() => setSelectedTournaments([])} className="px-2 py-1 ml-auto text-xs text-red-400 hover:text-red-300">Xóa lọc</button>
+                            )}
                         </div>
                     )}
 
                     {isAdminMode && (<button onClick={() => setEditingEvent({ id: 'new' })} className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800 transition flex items-center justify-center gap-2"><Plus size={20} /> Thêm Trận Đấu Thủ Công</button>)}
-                    {/* UPDATED RENDERING LOGIC FOR SORTED GROUPS */}
+                    
                     {pastGroups.length > 0 && (<div className="text-center"><button onClick={() => setShowHistory(!showHistory)} className="flex items-center gap-2 mx-auto text-gray-500 hover:text-white transition text-xs font-bold uppercase tracking-wider py-2 px-4 rounded-full border border-gray-800 hover:border-gray-600 bg-gray-900"><History size={14}/> {showHistory ? 'Ẩn trận đấu đã qua' : `Xem ${pastGroups.reduce((acc, g) => acc + g.events.length, 0)} trận đấu đã qua`}</button></div>)}
                     
                     {showHistory && pastGroups.map((group) => (
-                        <div key={group.dateStr} className="animate-fade-in opacity-75"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-500" /><h3 className="font-bold text-gray-400 capitalize">{group.dateStr} (Đã qua)</h3></div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
+                        <div key={group.dateStr} className="animate-fade-in opacity-75"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2"><CalendarIcon className="w-4 h-4 text-gray-500" /><h3 className="font-bold text-gray-400 capitalize">{group.dateStr} (Đã qua)</h3></div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={(t) => setSelectedTournaments([t])} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
                     ))}
                     
-                    {upcomingGroups.length === 0 && pastGroups.length === 0 && (<div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 rounded-lg"><Trophy className="w-12 h-12 text-gray-700 mb-2"/><p className="text-gray-500">Chưa có lịch thi đấu nào cho bộ lọc này.</p>{filterTournament && <button onClick={() => setFilterTournament(null)} className="mt-2 text-blue-400 text-sm hover:underline">Quay lại danh sách đầy đủ</button>}</div>)}
+                    {upcomingGroups.length === 0 && pastGroups.length === 0 && (<div className="flex flex-col items-center justify-center h-64 bg-gray-900/50 rounded-lg"><Trophy className="w-12 h-12 text-gray-700 mb-2"/><p className="text-gray-500">Chưa có lịch thi đấu nào cho bộ lọc này.</p>{selectedTournaments.length > 0 && <button onClick={() => setSelectedTournaments([])} className="mt-2 text-blue-400 text-sm hover:underline">Hiện tất cả</button>}</div>)}
                     
                     {upcomingGroups.map((group) => (
-                        <div key={group.dateStr} className="animate-fade-in"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2 sticky top-[72px] z-10 backdrop-blur-md"><CalendarIcon className="w-4 h-4 text-blue-400" /><h3 className="font-bold text-blue-100 capitalize">{group.dateStr}</h3>{group.dateStr === new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }) && <span className="ml-2 text-[10px] bg-red-600 text-white px-2 rounded font-bold animate-pulse">Hôm nay</span>}</div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={setFilterTournament} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
+                        <div key={group.dateStr} className="animate-fade-in"><div className="bg-gray-800/50 px-4 py-2 rounded-t-lg border-b border-gray-700 flex items-center gap-2 sticky top-[72px] z-10 backdrop-blur-md"><CalendarIcon className="w-4 h-4 text-blue-400" /><h3 className="font-bold text-blue-100 capitalize">{group.dateStr}</h3>{group.dateStr === new Date().toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'numeric' }) && <span className="ml-2 text-[10px] bg-red-600 text-white px-2 rounded font-bold animate-pulse">Hôm nay</span>}</div><div className="bg-gray-900 rounded-b-lg p-2 space-y-2">{group.events.sort((a,b) => new Date(a.time) - new Date(b.time)).map(event => (<div key={event.id} className="relative group"><ScheduleItem event={event} allEvents={events} onFilterTournament={(t) => setSelectedTournaments([t])} />{isAdminMode && (<div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity"><button onClick={() => setEditingEvent(event)} className="p-1.5 bg-blue-600 text-white rounded shadow hover:bg-blue-500"><Edit3 size={14}/></button><button onClick={() => handleDeleteEvent(event.id)} className="p-1.5 bg-red-600 text-white rounded shadow hover:bg-red-500"><Trash2 size={14}/></button></div>)}</div>))}</div></div>
                     ))}
                     {isAdminMode && (<button onClick={() => setEditingEvent({ id: 'new' })} className="w-full py-3 border-2 border-dashed border-gray-700 rounded-lg text-gray-400 hover:text-white hover:border-gray-500 hover:bg-gray-800 transition flex items-center justify-center gap-2 mt-4"><Plus size={20} /> Thêm Trận Đấu Thủ Công</button>)}
                 </div>
