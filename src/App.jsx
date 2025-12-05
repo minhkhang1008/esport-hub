@@ -578,6 +578,7 @@ export default function App() {
   const [selectedDayDetails, setSelectedDayDetails] = useState(null); 
   const [calendarDate, setCalendarDate] = useState(new Date());
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -681,7 +682,7 @@ export default function App() {
       } 
   };
 
-  const handleAutoUpdateValorant = async () => {
+const handleAutoUpdateValorant = async () => {
     setIsUpdating(true);
     try {
         const vlrEvents = await fetchValorantData();
@@ -692,6 +693,16 @@ export default function App() {
             });
             setLastUpdated(new Date());
             showNotification('success', `Đã cập nhật ${vlrEvents.length} trận đấu Valorant từ VLR.gg!`);
+        } else {
+            const hasRetried = sessionStorage.getItem('vlr_retry_done');
+            
+            if (!hasRetried) {
+                console.warn('Không lấy được dữ liệu VLR, tiến hành tự động refresh...');
+                sessionStorage.setItem('vlr_retry_done', 'true');
+                window.location.reload();
+            } else {
+                console.warn('Đã thử refresh nhưng vẫn không có dữ liệu VLR.');
+            }
         }
     } catch (e) {
         console.error("Lỗi cập nhật Valorant:", e);
@@ -713,8 +724,23 @@ export default function App() {
           sourceEvents = events.filter(e => e.game === activeGame);
       }
       const relevantEvents = sourceEvents.filter(e => e.status !== 'completed');
-      const tournaments = [...new Set(relevantEvents.map(e => e.tournament))];
-      return tournaments.sort();
+      
+      const tournamentsByGame = {};
+      relevantEvents.forEach(event => {
+          if (!tournamentsByGame[event.game]) {
+              tournamentsByGame[event.game] = new Set();
+          }
+          tournamentsByGame[event.game].add(event.tournament);
+      });
+      
+      const grouped = Object.entries(tournamentsByGame).map(([game, tournaments]) => ({
+          game,
+          label: GAMES[game]?.label || game,
+          color: GAMES[game]?.color || 'bg-gray-700',
+          tournaments: Array.from(tournaments).sort()
+      })).sort((a, b) => a.label.localeCompare(b.label));
+      
+      return grouped;
   }, [events, activeGame]);
 
   const toggleTournamentFilter = (tourney) => {
@@ -829,26 +855,68 @@ export default function App() {
             {viewMode === 'schedule' && (
                 <div className="space-y-6">
                     {activeTournaments.length > 0 && (
-                        <div className="bg-gray-900/50 border border-gray-800 p-3 rounded-lg overflow-x-auto whitespace-nowrap scrollbar-hide flex items-center gap-2">
-                            <div className="flex items-center gap-1 text-gray-500 text-xs mr-2 font-bold uppercase tracking-wider">
-                                <Filter size={14} /> Giải đấu:
+                        <div className="bg-gray-900/50 border border-gray-800 rounded-lg overflow-hidden">
+                            <button
+                                onClick={() => setIsFilterOpen(!isFilterOpen)}
+                                className="w-full flex items-center justify-between p-3 hover:bg-gray-800/50 transition-colors"
+                            >
+                                <div className="flex items-center gap-2 text-gray-300 text-sm font-bold uppercase tracking-wider">
+                                    <Filter size={16} />
+                                    <span>Lọc theo Giải đấu</span>
+                                    {selectedTournaments.length > 0 && (
+                                        <span className="bg-blue-600 text-white text-xs px-2 py-0.5 rounded-full">
+                                            {selectedTournaments.length}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    {selectedTournaments.length > 0 && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setSelectedTournaments([]); }}
+                                            className="px-2 py-1 text-xs text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition"
+                                        >
+                                            Xóa lọc
+                                        </button>
+                                    )}
+                                    <ChevronRight
+                                        size={20}
+                                        className={`text-gray-400 transition-transform duration-300 ${
+                                            isFilterOpen ? 'rotate-90' : ''
+                                        }`}
+                                    />
+                                </div>
+                            </button>
+                            <div
+                                className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                                    isFilterOpen ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                                }`}
+                            >
+                                <div className="p-4 pt-0 space-y-4">
+                                    {activeTournaments.map(({ game, label, color, tournaments }) => (
+                                        <div key={game} className="space-y-2">
+                                            <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                                                <div className={`w-2 h-2 rounded-full ${color}`}></div>
+                                                <span>{label}</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {tournaments.map(tourney => (
+                                                    <button
+                                                        key={tourney}
+                                                        onClick={() => toggleTournamentFilter(tourney)}
+                                                        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all border ${
+                                                            selectedTournaments.includes(tourney)
+                                                            ? 'bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-900/50 scale-105'
+                                                            : 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700 hover:text-white hover:border-gray-600'
+                                                        }`}
+                                                    >
+                                                        {tourney}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
-                            {activeTournaments.map(tourney => (
-                                <button
-                                    key={tourney}
-                                    onClick={() => toggleTournamentFilter(tourney)}
-                                    className={`px-3 py-1 rounded-full text-xs font-medium transition border ${
-                                        selectedTournaments.includes(tourney) 
-                                        ? 'bg-blue-600 border-blue-500 text-white' 
-                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700 hover:text-white'
-                                    }`}
-                                >
-                                    {tourney}
-                                </button>
-                            ))}
-                            {selectedTournaments.length > 0 && (
-                                <button onClick={() => setSelectedTournaments([])} className="px-2 py-1 ml-auto text-xs text-red-400 hover:text-red-300">Xóa lọc</button>
-                            )}
                         </div>
                     )}
 
